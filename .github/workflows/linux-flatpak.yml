@@ -46,8 +46,6 @@ jobs:
         run: |
           cp -r -f cryptomator/dist/linux/flatpak flatpak-build
           envsubst '$FLATPAK_VERSION $FLATPAK_REVISION $CRYPTOMATOR_SOURCE' < flatpak-build/org.cryptomator.Cryptomator.TEMPLATE.yaml > flatpak-build/org.cryptomator.Cryptomator.yaml
-          yq '(.modules[] | select(.name == "cryptomator") | .build-options.build-args) = ["--share=network"]' -i flatpak-build/org.cryptomator.Cryptomator.yaml
-          yq '(.modules[] | select(.name == "cryptomator") | .sources) |= map(select( . == "maven*" | not))' -i flatpak-build/org.cryptomator.Cryptomator.yaml
         env:
           FLATPAK_VERSION: ${{ needs.get-version.outputs.semVerNum }}
           FLATPAK_REVISION: 1
@@ -55,6 +53,14 @@ jobs:
             type: git
                     path: cryptomator
                     commit: ${{ github.sha }}
+      - name: Enable network access for flatpak
+        uses: mikefarah/yq@5a7e72a743649b1b3a47d1a1d8214f3453173c51 # v4.52.4
+        with:
+          cmd: yq '(.modules[] | select(.name == "cryptomator") | .build-options.build-args) = ["--share=network"]' -i flatpak-build/org.cryptomator.Cryptomator.yaml
+      - name: Remove maven dependencies
+        uses: mikefarah/yq@5a7e72a743649b1b3a47d1a1d8214f3453173c51 # v4.52.4
+        with:
+          cmd: yq '(.modules[] | select(.name == "cryptomator") | .sources) |= map(select( . == "maven*" | not))' -i flatpak-build/org.cryptomator.Cryptomator.yaml
       - uses: flatpak/flatpak-github-actions/flatpak-builder@92ae9851ad316786193b1fd3f40c4b51eb5cb101 # v6.6
         with:
           bundle: cryptomator.flatpak
