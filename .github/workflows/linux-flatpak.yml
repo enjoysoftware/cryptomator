@@ -1,4 +1,4 @@
-name: Create PR for flathub
+name: Build flatpak
 
 on:
   release:
@@ -7,13 +7,53 @@ on:
     inputs:
       tag:
         description: 'Release tag'
-        required: true
+        required: false
 
 jobs:
   get-version:
     uses: ./.github/workflows/get-version.yml
     with:
       version: ${{ inputs.tag }}
+
+  flatpak:
+    name: "Build flatpak"
+    needs: [get-version]
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-48
+      options: --privileged
+    strategy:
+      matrix:
+        variant:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          path: cryptomator
+      - name: Get SHA of HEAD commit
+        id: git-head-sha
+        run: echo "head-sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+      - name: Transform build template into build script
+        run: envsubst '$FLATPAK_VERSION $FLATPAK_REVISION $CRYPTOMATOR_SOURCE' < cryptomator/dist/linux/flatpak/org.cryptomator.Cryptomator.TEMPLATE.yaml > org.cryptomator.Cryptomator.yaml
+        env:
+          FLATPAK_VERSION: ${{ needs.get-version.outputs.semVerNum }}
+          FLATPAK_REVISION: 1
+          CRYPTOMATOR SOURCE: |-
+            type: git
+                    path: cryptomator
+                    commit: ${{ steps.git-head-sha.outputs.head-sha }}
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@92ae9851ad316786193b1fd3f40c4b51eb5cb101 # v6.6
+        with:
+          bundle: cryptomator.flatpak
+          manifest-path: org.cryptomator.Cryptomator.yaml
+          cache-key: flatpak-builder-${{ github.sha }}
+          #build-dir: flatpak_app
+          #gpg-sign:
+          arch: ${{ matrix.variant.arch }}
+
   tarball:
     name: Determines tarball url and compute checksum
     runs-on: ubuntu-latest
