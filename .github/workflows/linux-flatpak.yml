@@ -31,10 +31,11 @@ jobs:
       image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-25.08
       options: --privileged
     strategy:
+      #fail-fast: false
       matrix:
         variant:
-          - arch: x86_64
-            runner: ubuntu-24.04
+          #- arch: x86_64
+          #  runner: ubuntu-24.04
           - arch: aarch64
             runner: ubuntu-24.04-arm
     steps:
