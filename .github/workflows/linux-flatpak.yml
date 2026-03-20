@@ -54,7 +54,7 @@ jobs:
         env:
           FLATPAK_VERSION: ${{ needs.get-version.outputs.semVerNum }}
           FLATPAK_REVISION: 1
-          CRYPTOMATOR SOURCE: |-
+          CRYPTOMATOR_SOURCE: |-
             type: git
                     path: cryptomator
                     commit: ${{ github.sha }}
@@ -65,6 +65,7 @@ jobs:
           path: |
             flatpak-build/org.cryptomator.Cryptomator.yaml
       - uses: flatpak/flatpak-github-actions/flatpak-builder@92ae9851ad316786193b1fd3f40c4b51eb5cb101 # v6.6
+        #TODO: Remove for production
         if: 1 == 0
         with:
           bundle: cryptomator.flatpak
