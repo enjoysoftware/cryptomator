@@ -51,6 +51,11 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           path: cryptomator
+          ref: ${{ inputs.tag || github.ref_name }}
+      - name: Resolve checked-out source SHA
+        id: cryptomator-source
+        working-directory: cryptomator
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Prepare build files
         run: |
           cp -r -f cryptomator/dist/linux/flatpak/* .
@@ -61,7 +66,7 @@ jobs:
           CRYPTOMATOR_SOURCE: |-
             type: git
                     path: cryptomator
-                    commit: ${{ github.sha }}
+                    commit: ${{ steps.cryptomator-source.outputs.sha }}
       - name: Copy build script for upload
         run: cp org.cryptomator.Cryptomator.yaml org.cryptomator.Cryptomator.${{matrix.variant.arch}}.yaml
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
@@ -161,6 +166,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           path: cryptomator
+          ref: ${{ inputs.tag || github.ref_name }}
       - name: Download source tarball and compute checksum
         id: sha512
         run: |
@@ -186,10 +192,10 @@ jobs:
           if [[ "$CURRENT_VERSION" == "$TARGET_VERSION" && "$CURRENT_REVISION" =~ ^[0-9]+$ ]]; then
             NEXT_REVISION=$((CURRENT_REL + 1))
           else
-            NEXT_REL=1
+            NEXT_REVISION=1
           fi
 
-          echo "value=${NEXT_REL}" >> "$GITHUB_OUTPUT"
+          echo "value=${NEXT_REVISION}" >> "$GITHUB_OUTPUT"
         env:
           TARGET_VERSION: ${{ needs.get-version.outputs.semVerStr }}
       - name: Update build files
