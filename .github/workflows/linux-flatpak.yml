@@ -197,7 +197,7 @@ jobs:
           CURRENT_REVISION="$(yq '(.modules[] | select(.name == "cryptomator") | .build-options.env.REVISION_NO)' org.cryptomator.Cryptomator.yaml)"
 
           if [[ "$CURRENT_VERSION" == "$TARGET_VERSION" && "$CURRENT_REVISION" =~ ^[0-9]+$ ]]; then
-            NEXT_REVISION=$((CURRENT_REL + 1))
+            NEXT_REVISION=$((CURRENT_REVISION + 1))
           else
             NEXT_REVISION=1
           fi
