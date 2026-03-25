@@ -36,18 +36,16 @@ jobs:
       - name: Extract MSI and EXE download URLs
         id: urls
         run: |
-          MSI_URL=$(gh api "repos/${{ github.repository }}/releases/${{ github.event.release.id }}/assets" \
-            --jq '[.[] | select(.name | endswith("-x64.msi"))][0].browser_download_url')
-          EXE_URL=$(gh api "repos/${{ github.repository }}/releases/${{ github.event.release.id }}/assets" \
-            --jq '[.[] | select(.name | endswith("-x64.exe"))][0].browser_download_url')
+          MSI_URL=$(jq -r '[.[] | select(.name | endswith("-x64.msi"))][0].browser_download_url // "null"' <<< "$RELEASE_ASSETS")
+          EXE_URL=$(jq -r '[.[] | select(.name | endswith("-x64.exe"))][0].browser_download_url // "null"' <<< "$RELEASE_ASSETS")
           echo "msi=${MSI_URL}" >> $GITHUB_OUTPUT
           echo "exe=${EXE_URL}" >> $GITHUB_OUTPUT
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_ASSETS: ${{ toJson(github.event.release.assets) }}
 
   allowlist-msi-x64:
     needs: [get-asset-urls]
-    if: needs.get-asset-urls.outputs.msi-url != 'null' && needs.get-asset-urls.outputs.msi-url != ''
+    if: needs.get-asset-urls.outputs.msi-url != 'null'
     uses: ./.github/workflows/av-whitelist.yml
     with:
       url: ${{ needs.get-asset-urls.outputs.msi-url }}
@@ -55,7 +53,7 @@ jobs:
 
   allowlist-exe-x64:
     needs: [get-asset-urls, allowlist-msi-x64]
-    if: needs.get-asset-urls.outputs.exe-url != 'null' && needs.get-asset-urls.outputs.exe-url != ''
+    if: needs.get-asset-urls.outputs.exe-url != 'null'
     uses: ./.github/workflows/av-whitelist.yml
     with:
       url: ${{ needs.get-asset-urls.outputs.exe-url }}
@@ -79,3 +77,16 @@ jobs:
           SLACK_MESSAGE: "Ready to <https://github.com/${{ github.repository }}/actions/workflows/winget.yml|release to winget>."
           SLACK_FOOTER: false
           MSG_MINIMAL: true
+
+  notify-website-repo:
+    if: needs.get-version.outputs.versionType == 'stable'
+    needs: [get-version]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify website repo about desktop update
+        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
+        with:
+          event-type: desktop-update
+          token: ${{ secrets.CRYPTOBOT_RELEASE_TOKEN }}
+          repository: cryptomator/cryptomator.github.io
+
