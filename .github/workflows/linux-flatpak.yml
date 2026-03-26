@@ -82,7 +82,7 @@ jobs:
         with:
           bundle: cryptomator.flatpak
           manifest-path: org.cryptomator.Cryptomator.yaml
-          cache-key: flatpak-builder-${{ github.sha }}
+          cache-key: flatpak-builder-${{ steps.cryptomator-source.outputs.sha }}
           arch: ${{ matrix.variant.arch }}
           keep-build-dirs: true
       - name: Collect maven dependencies
