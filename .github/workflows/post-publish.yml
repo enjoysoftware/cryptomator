@@ -79,14 +79,15 @@ jobs:
           MSG_MINIMAL: true
 
   notify-website-repo:
-    if: needs.get-version.outputs.versionType == 'stable'
     needs: [get-version]
     runs-on: ubuntu-latest
+    if: needs.get-version.outputs.versionType == 'stable'
     steps:
       - name: Notify website repo about desktop update
         uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
         with:
-          event-type: desktop-update
-          token: ${{ secrets.CRYPTOBOT_RELEASE_TOKEN }}
+          event-type: desktop-release
+          token: ${{ secrets.CRYPTOBOT_WORKFLOW_DISPATCH_TOKEN }}
           repository: cryptomator/cryptomator.github.io
+          client-payload: '{ "version": "${{needs.get-version.outputs.semVerStr}}", "release": ${{ toJson(github.event.release.assets) }} }'
 
