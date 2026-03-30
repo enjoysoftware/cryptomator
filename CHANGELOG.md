@@ -7,7 +7,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 The changelog starts with version 1.19.0.
 Changes to prior versions can be found on the [Github release page](https://github.com/cryptomator/cryptomator/releases).
 
-## [Unreleased](https://github.com/cryptomator/cryptomator/compare/1.18.0...HEAD)
+
+## [Unreleased](https://github.com/cryptomator/cryptomator/compare/1.19.1...HEAD)
+
+No changes yet.
+
+
+## [1.19.2](https://github.com/cryptomator/cryptomator/releases/1.19.2) - 2026-03-20
+
+### Security
+* Cryptomamtor Hub Vaults: Additional patch for (#4179, [GHSA-34rf-rwr3-7g43](https://github.com/cryptomator/cryptomator/security/advisories/GHSA-34rf-rwr3-7g43))
+
+
+## [1.19.1](https://github.com/cryptomator/cryptomator/releases/1.19.1) - 2026-03-12
+
+### Security
+* Cryptomamtor Hub Vaults: Fixed possible man-in-the-middle attack with tampered vault config (#4179, [GHSA-34rf-rwr3-7g43](https://github.com/cryptomator/cryptomator/security/advisories/GHSA-34rf-rwr3-7g43))
+* Disallow unencrypted http connections to hub by default ([CVE-2026-32309](https://github.com/cryptomator/cryptomator/security/advisories/GHSA-vv33-h7qx-c264))
+* Disallow loading of masterkey file from arbitrary paths (#4180, [CVE-2026-32310](https://github.com/cryptomator/cryptomator/security/advisories/GHSA-5phc-5pfx-hr52))
+* Fixed not-configured plugin directory does not disable plugin search ([#4176](https://github.com/cryptomator/cryptomator/pull/4176))
+
+### Added
+* Trust on first use, adding new config properties `cryptomator.hub.allowedHosts` and `cryptomator.hub.enableTrustOnFirstUse` (#4179)
+
+### Fixed
+* Fixed Finder window opens twice when revealing vault on macOS ([#4177](https://github.com/cryptomator/cryptomator/pull/4177))
+* Fixed app does not start due to secret service detection failure on Linux ([#4175](https://github.com/cryptomator/cryptomator/pull/4175))
+
+### Changed
+* Pin version of appimagetool([#4181](https://github.com/cryptomator/cryptomator/pull/4181))
+* Updated translations
+* Updated dependencies:
+  * `org.cryptomator:integrations-api` from 1.8.0-beta1 to 1.8.0
+  * `org.cryptomator:integrations-linux` from 1.7.0-beta4 to 1.7.0
+  * `org.cryptomator:integrations-mac` from 1.5.0-beta3 to 1.5.0
+
+
+
+## [1.19.0](https://github.com/cryptomator/cryptomator/releases/tag/1.19.0) - 2026-03-09
 
 ### Added
 * Self-Update Mechanism ([#3948](https://github.com/cryptomator/cryptomator/pull/3948))
@@ -31,7 +68,7 @@ Changes to prior versions can be found on the [Github release page](https://gith
 * Disable user defined app start config on Windows ([#4132](https://github.com/cryptomator/cryptomator/issues/4132))
 * Disable plugin loading by default ([#4136](https://github.com/cryptomator/cryptomator/4136))
 * Use JDK 25 ([#4031](https://github.com/cryptomator/cryptomator/pull/4031))
-* Update JavaFX to 25.0.2 ([#4145](https://github.com/cryptomator/cryptomator/pull/4145)))
+* Update JavaFX to 25.0.2 ([#4145](https://github.com/cryptomator/cryptomator/pull/4145))
 * Updated translations
 * Updated dependencies
   * `ch.qos.logback:*` from 1.5.19 to 1.5.32

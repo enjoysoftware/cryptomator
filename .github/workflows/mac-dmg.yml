@@ -1,6 +1,8 @@
 name: Build macOS .dmg for arm64
 
 on:
+  schedule:
+    - cron: '0 20 20 * *'
   workflow_call:
     inputs:
       is-release:
@@ -147,6 +149,7 @@ jobs:
           --java-options "-Dcryptomator.updateMechanism=org.cryptomator.macos.update.DmgUpdateMechanism"
           --java-options "-Dcryptomator.buildNumber=\"dmg-${{ needs.get-version.outputs.revNum }}\""
           --java-options "-XX:ErrorFile=/cryptomator/cryptomator_crash.log"
+          --java-options "-Dcryptomator.hub.enableTrustOnFirstUse=true"
           --mac-package-identifier org.cryptomator
           --resource-dir dist/mac/resources
       - name: Patch Cryptomator.app
@@ -257,7 +260,7 @@ jobs:
         env:
           CODESIGN_IDENTITY: ${{ secrets.MACOS_CODESIGN_IDENTITY }}
       - name: Notarize .dmg
-        if: startsWith(github.ref, 'refs/tags/') || inputs.notarize
+        if: startsWith(github.ref, 'refs/tags/') || inputs.notarize || github.event_name == 'schedule'
         uses: cocoalibs/xcode-notarization-action@5cf433d494b6fa26504b574c591f4dd120388846 # v1.0.3
         with:
           app-path: 'Cryptomator-*.dmg'
