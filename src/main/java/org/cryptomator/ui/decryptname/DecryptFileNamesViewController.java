@@ -58,8 +58,6 @@ public class DecryptFileNamesViewController implements FxController {
 	private final Stage window;
 	private final Vault vault;
 	private final ResourceBundle resourceBundle;
-	private final List<Path> initialList;
-
 	@FXML
 	public TableColumn<CipherAndCleartext, String> ciphertextColumn;
 	@FXML
@@ -73,7 +71,6 @@ public class DecryptFileNamesViewController implements FxController {
 		this.vault = vault;
 		this.resourceBundle = resourceBundle;
 		this.mapping = new SimpleListProperty<>(FXCollections.observableArrayList());
-		this.initialList = List.of();
 	}
 
 	@FXML
@@ -123,7 +120,6 @@ public class DecryptFileNamesViewController implements FxController {
 				});
 			}
 		});
-		decrypt(initialList);
 		window.setOnHidden(_ -> mapping.clear());
 	}
 
