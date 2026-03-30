@@ -3,6 +3,8 @@ name: Build Windows Installer
 on:
   release:
     types: [published]
+  schedule:
+    - cron: '0 19 20 * *'
   workflow_dispatch:
     inputs:
       version:
@@ -157,6 +159,7 @@ jobs:
           --java-options "-Dcryptomator.integrationsWin.windowsHelloKeychainPaths=\"@{appdata}/Cryptomator/windowsHelloKeychain.json\""
           --java-options "-Dcryptomator.disableUpdateCheck=false"
           --java-options "-XX:ErrorFile=C:/cryptomator/cryptomator_crash.log"
+          --java-options "-Dcryptomator.hub.enableTrustOnFirstUse=true"
           --resource-dir dist/win/resources
           --icon dist/win/resources/Cryptomator.ico
           --add-launcher "Cryptomator (Debug)=dist/win/debug-launcher.properties"
@@ -192,7 +195,7 @@ jobs:
           & $env:JAVA_HOME\bin\jmod.exe extract --dir jpackage-jmod "${env:JAVA_HOME}\jmods\jdk.jpackage.jmod"
           Get-ChildItem -Recurse -Path "jpackage-jmod" -File wixhelper.dll | Select-Object -Last 1 | Copy-Item -Destination "appdir"
       - name: Sign DLLs with Azure Trusted Signing
-        if: inputs.sign || github.event_name == 'release'
+        if: inputs.sign || github.event_name == 'release' || github.event_name == 'schedule'
         uses: ./.github/actions/win-sign-action
         with:
           base-dir: ${{ github.workspace }}\appdir
@@ -201,17 +204,6 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-      - name: Sign DLLs with Actalis CodeSigner
-        if: inputs.sign || github.event_name == 'release'
-        uses: skymatic/workflows/.github/actions/win-sign-action@957d3c2c08c56855fdac41e5afb9a7aca8c30dd9 # no specific version
-        with:
-          base-dir: 'appdir'
-          file-extensions: 'dll,exe,ps1'
-          recursive: true
-          sign-description: 'Cryptomator'
-          sign-url: 'https://cryptomator.org'
-          username: ${{ secrets.WIN_CODESIGN_USERNAME }}
-          password: ${{ secrets.WIN_CODESIGN_PW }}
       - name: Replace DLLs inside jars with signed ones
         shell: pwsh
         run: |
@@ -261,7 +253,7 @@ jobs:
           JP_WIXWIZARD_RESOURCES: ${{ github.workspace }}/dist/win/resources # requires abs path, used in resources/main.wxs
           JP_WIXHELPER_DIR: ${{ github.workspace }}\appdir
       - name: Sign MSI with Azure Trusted Signing
-        if: inputs.sign || github.event_name == 'release'
+        if: inputs.sign || github.event_name == 'release' || github.event_name == 'schedule'
         uses: ./.github/actions/win-sign-action
         with:
           base-dir: ${{ github.workspace }}\installer
@@ -280,7 +272,7 @@ jobs:
           GPG_PRIVATE_KEY: ${{ secrets.RELEASES_GPG_PRIVATE_KEY }}
           GPG_PASSPHRASE: ${{ secrets.RELEASES_GPG_PASSPHRASE }}
       - name: Upload artifacts
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: msi-${{ matrix.arch }}
           path: |
@@ -311,7 +303,7 @@ jobs:
         env:
           WIX_VERSION: ${{ env.WIX_VERSION }}
       - name: Download .msi
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
         with:
           name: msi-${{ matrix.arch }}
           path: dist/win/bundle/resources
@@ -369,7 +361,7 @@ jobs:
         run: >
           wix burn detach installer/unsigned/Cryptomator-Installer.exe -engine tmp/engine.exe
       - name: Sign WiX burn engine with Azure Trusted Signing
-        if: inputs.sign || github.event_name == 'release'
+        if: inputs.sign || github.event_name == 'release' || github.event_name == 'schedule'
         uses: ./.github/actions/win-sign-action
         with:
           base-dir: ${{ github.workspace }}\tmp
@@ -379,21 +371,11 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-      - name: Sign burn engine with Actalis CodeSigner
-        if: inputs.sign || github.event_name == 'release'
-        uses: skymatic/workflows/.github/actions/win-sign-action@957d3c2c08c56855fdac41e5afb9a7aca8c30dd9 # no specific version
-        with:
-          base-dir: 'tmp'
-          file-extensions: 'exe'
-          sign-description: 'Cryptomator Bundle Installer'
-          sign-url: 'https://cryptomator.org'
-          username: ${{ secrets.WIN_CODESIGN_USERNAME }}
-          password: ${{ secrets.WIN_CODESIGN_PW }}
       - name: Reattach signed burn engine to installer
         run: >
           wix burn reattach installer/unsigned/Cryptomator-Installer.exe -engine tmp/engine.exe -o installer/Cryptomator-Installer.exe
       - name: Sign EXE installer with Azure Trusted Signing
-        if: inputs.sign || github.event_name == 'release'
+        if: inputs.sign || github.event_name == 'release' || github.event_name == 'schedule'
         uses: ./.github/actions/win-sign-action
         with:
           base-dir: ${{ github.workspace }}\installer
@@ -403,16 +385,6 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-      - name: Sign installer with Actalis CodeSigner
-        if: inputs.sign || github.event_name == 'release'
-        uses: skymatic/workflows/.github/actions/win-sign-action@957d3c2c08c56855fdac41e5afb9a7aca8c30dd9 # no specific version
-        with:
-          base-dir: 'installer'
-          file-extensions: 'exe'
-          sign-description: 'Cryptomator Bundle Installer'
-          sign-url: 'https://cryptomator.org'
-          username: ${{ secrets.WIN_CODESIGN_USERNAME }}
-          password: ${{ secrets.WIN_CODESIGN_PW }}
       - name: Add possible alpha/beta tags to installer name
         run: mv installer/Cryptomator-Installer.exe Cryptomator-${{ needs.get-version.outputs.semVerStr }}-${{ matrix.executable-suffix }}.exe
       - name: Create detached GPG signature with key 615D449FE6E6A235
@@ -423,7 +395,7 @@ jobs:
           GPG_PRIVATE_KEY: ${{ secrets.RELEASES_GPG_PRIVATE_KEY }}
           GPG_PASSPHRASE: ${{ secrets.RELEASES_GPG_PASSPHRASE }}
       - name: Upload artifacts
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: exe-${{ matrix.executable-suffix }}
           path: |
@@ -441,7 +413,7 @@ jobs:
       download-url-exe-x64: ${{ fromJSON(steps.publish.outputs.assets)[2].browser_download_url }}
     steps:
       - name: Download installers
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
         with:
           merge-multiple: true
       - name: Publish installers on GitHub Releases
@@ -479,7 +451,7 @@ jobs:
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@e31e87e03dd19038e411e38ae27cbad084a90661 # v2.3.3
         env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_CRYPTOMATOR_DESKTOP }}
           SLACK_USERNAME: 'Cryptobot'
           SLACK_ICON: false
           SLACK_ICON_EMOJI: ':bot:'

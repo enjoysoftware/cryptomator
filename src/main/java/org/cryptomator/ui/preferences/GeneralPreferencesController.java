@@ -10,16 +10,18 @@ import org.cryptomator.integrations.common.NamedServiceProvider;
 import org.cryptomator.integrations.keychain.KeychainAccessException;
 import org.cryptomator.integrations.keychain.KeychainAccessProvider;
 import org.cryptomator.integrations.quickaccess.QuickAccessService;
+import org.cryptomator.integrations.revealpath.RevealFailedException;
+import org.cryptomator.integrations.revealpath.RevealPathService;
 import org.cryptomator.ui.common.FxController;
 import org.cryptomator.ui.fxapp.FxApplicationWindows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import javafx.application.Application;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ToggleGroup;
@@ -41,7 +43,7 @@ public class GeneralPreferencesController implements FxController {
 	private final Settings settings;
 	private final Optional<AutoStartProvider> autoStartProvider;
 	private final List<QuickAccessService> quickAccessServices;
-	private final Application application;
+	private final RevealPathService revealPathService;
 	private final Environment environment;
 	private final List<KeychainAccessProvider> keychainAccessProviders;
 	private final KeychainManager keychain;
@@ -55,14 +57,21 @@ public class GeneralPreferencesController implements FxController {
 	public CheckBox autoCloseVaultsCheckbox;
 	public CheckBox debugModeCheckbox;
 	public CheckBox autoStartCheckbox;
+	public Button resetTrustedHostsButton;
 	public ToggleGroup nodeOrientation;
 
 	private CompletionStage<Void> keychainMigrations = CompletableFuture.completedFuture(null);
 
 	@Inject
-	GeneralPreferencesController(@PreferencesWindow Stage window, Settings settings, Optional<AutoStartProvider> autoStartProvider, //
-								 List<KeychainAccessProvider> keychainAccessProviders, KeychainManager keychain, Application application, //
-								 Environment environment, FxApplicationWindows appWindows, ExecutorService backgroundExecutor) {
+	GeneralPreferencesController(@PreferencesWindow Stage window, //
+								 Settings settings, //
+								 Optional<AutoStartProvider> autoStartProvider, //
+								 List<KeychainAccessProvider> keychainAccessProviders, //
+								 KeychainManager keychain, //
+								 RevealPathService revealPathService, //
+								 Environment environment, //
+								 FxApplicationWindows appWindows, //
+								 ExecutorService backgroundExecutor) {
 		this.window = window;
 		this.settings = settings;
 		this.autoStartProvider = autoStartProvider;
@@ -70,7 +79,7 @@ public class GeneralPreferencesController implements FxController {
 		this.keychain = keychain;
 		this.backgroundExecutor = backgroundExecutor;
 		this.quickAccessServices = QuickAccessService.get().toList();
-		this.application = application;
+		this.revealPathService = revealPathService;
 		this.environment = environment;
 		this.appWindows = appWindows;
 	}
@@ -98,6 +107,9 @@ public class GeneralPreferencesController implements FxController {
 		quickAccessServiceChoiceBox.setConverter(new NamedServiceConverter<>());
 		Bindings.bindBidirectional(settings.quickAccessService, quickAccessServiceChoiceBox.valueProperty(), quickAccessSettingsConverter);
 		quickAccessServiceChoiceBox.disableProperty().bind(useQuickAccessCheckbox.selectedProperty().not());
+		if (resetTrustedHostsButton != null) {
+			resetTrustedHostsButton.disableProperty().bind(Bindings.isEmpty(settings.trustedHosts));
+		}
 	}
 
 	private void migrateKeychainEntries(Observable observable, KeychainAccessProvider oldProvider, KeychainAccessProvider newProvider) {
@@ -124,6 +136,10 @@ public class GeneralPreferencesController implements FxController {
 		return autoStartProvider.isPresent();
 	}
 
+	public boolean isHubTrustOnFirstUseEnabled() {
+		return environment.hubTrustOnFirstUse();
+	}
+
 	@FXML
 	public void toggleAutoStart() {
 		autoStartProvider.ifPresent(autoStart -> {
@@ -147,8 +163,17 @@ public class GeneralPreferencesController implements FxController {
 	}
 
 	@FXML
+	public void resetTrustedHosts() {
+		settings.trustedHosts.clear();
+	}
+
+	@FXML
 	public void showLogfileDirectory() {
-		environment.getLogDir().ifPresent(logDirPath -> application.getHostServices().showDocument(logDirPath.toUri().toString()));
+		try {
+			revealPathService.reveal(environment.getLogDir().orElseThrow());
+		} catch (RevealFailedException e) {
+			LOG.warn("Failed to reveal log files directory.", e);
+		}
 	}
 
 	/* Helper classes */
@@ -196,4 +221,5 @@ public class GeneralPreferencesController implements FxController {
 			}
 		}
 	}
+
 }
