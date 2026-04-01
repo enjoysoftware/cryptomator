@@ -128,12 +128,13 @@ jobs:
           export APPIMAGE_x86_64="${APPIMAGE_X64_SHA}  cryptomator-${SEMVER}-x86_64.AppImage"
           export APPIMAGE_aarch64="${APPIMAGE_AARCH64_SHA}  cryptomator-${SEMVER}-aarch64.AppImage"
 
-          envsubst '$TARBALL $EXE $MSI $DMG_x64 $DMG_arm64 $APPIMAGE_x86_64 $APPIMAGE_aarch64' \
+          envsubst '$VERSION $TARBALL $EXE $MSI $DMG_x64 $DMG_arm64 $APPIMAGE_x86_64 $APPIMAGE_aarch64' \
             <<< "${RELEASE_BODY}" \
             > release-body.md
 
           gh release edit "${TAG}" --draft --notes-file release-body.md
         env:
+          VERSION: ${{ needs.get-version.outputs.semVerStr }}
           SRC_SHA: ${{ steps.src-sha256.outputs.value }}
           MSI_SHA: ${{ needs.build-exe-and-msi.outputs.sha256-msi }}
           EXE_SHA: ${{ needs.build-exe-and-msi.outputs.sha256-exe }}
