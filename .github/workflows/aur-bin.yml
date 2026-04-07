@@ -52,12 +52,31 @@ jobs:
         run: |
           git config --global safe.directory '*'
           git checkout -b "release/${SEMVER_STR}"
+      - name: Determine pkgrel
+        id: pkgrel
+        run: |
+          CURRENT_VERSION="$(sed -nE 's/^pkgver=(.*)$/\1/p' PKGBUILD | head -n1)"
+          CURRENT_REL="$(sed -nE 's/^pkgrel=([0-9]+).*$/\1/p' PKGBUILD | head -n1)"
+
+          if [[ "$CURRENT_VERSION" == "$TARGET_VERSION" && "$CURRENT_REL" =~ ^[0-9]+$ ]]; then
+            NEXT_REL=$((CURRENT_REL + 1))
+          else
+            NEXT_REL=1
+          fi
+
+          echo "value=${NEXT_REL}" >> "$GITHUB_OUTPUT"
+          echo "dist-version=${TARGET_VERSION}-${NEXT_REL}" >> "$GITHUB_OUTPUT"
+        env:
+          TARGET_VERSION: ${{ needs.get-version.outputs.semVerStr }}
       - name: Update build file
         run: |
-          sed -i -e "s|^pkgver=.*$|pkgver=${SEMVER_STR}|" PKGBUILD
-          sed -i -e 's|^pkgrel=.*$|pkgrel=1|' PKGBUILD
+          sed -i -e "s|^pkgver=.*$|pkgver=${PKG_VERSION}|" PKGBUILD
+          sed -i -e "s|^pkgrel=.*$|pkgrel=${PKG_RELEASE}|" PKGBUILD
           sudo -u builder updpkgsums
           sudo -u builder makepkg --printsrcinfo > .SRCINFO
+        env:
+          PKG_VERSION: ${{ needs.get-version.outputs.semVerNum }}
+          PKG_RELEASE: ${{ steps.pkgrel.outputs.value }}
       - name: Build package with makepkg
         run: >
           sudo -u builder
@@ -69,15 +88,18 @@ jobs:
           git config user.email "cryptobot@users.noreply.github.com"
           git config push.autoSetupRemote true
           git stage PKGBUILD .SRCINFO
-          git commit -m "Prepare release ${SEMVER_STR}"
+          git commit -m "Prepare release ${DIST_VERSION}"
           git push
+        env:
+          DIST_VERSION: ${{ steps.pkgrel.outputs.dist-version }}
       - name: Create pull request
         id: create-pr
         run: |
           printf "Created by $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > pr_body.md
-          PR_URL=$(gh pr create --title "Release ${SEMVER_STR}" --body-file pr_body.md)
+          PR_URL=$(gh pr create --title "Release ${DIST_VERSION}" --body-file pr_body.md)
           echo "url=$PR_URL" >> "$GITHUB_OUTPUT"
         env:
+          DIST_VERSION: ${{ steps.pkgrel.outputs.dist-version }}
           GH_TOKEN: ${{ secrets.CRYPTOBOT_PR_TOKEN }}
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@e31e87e03dd19038e411e38ae27cbad084a90661 # v2.3.3

@@ -132,7 +132,6 @@ jobs:
       - name: Determine pkgrel
         id: pkgrel
         run: |
-          TARGET_VERSION='${{ needs.get-version.outputs.semVerStr }}'
           CURRENT_VERSION="$(sed -nE 's/^pkgver=(.*)$/\1/p' PKGBUILD | head -n1)"
           CURRENT_REL="$(sed -nE 's/^pkgrel=([0-9]+).*$/\1/p' PKGBUILD | head -n1)"
 
@@ -143,9 +142,9 @@ jobs:
           fi
 
           echo "value=${NEXT_REL}" >> "$GITHUB_OUTPUT"
-          echo "dist-version=${VERSION}-${NEXT_REL}" >> "$GITHUB_OUTPUT"
+          echo "dist-version=${TARGET_VERSION}-${NEXT_REL}" >> "$GITHUB_OUTPUT"
         env:
-          VERSION: ${{ needs.get-version.outputs.semVerStr }}
+          TARGET_VERSION: ${{ needs.get-version.outputs.semVerStr }}
       - name: Download PKGBUILD template
         uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
         with:
