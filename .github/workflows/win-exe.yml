@@ -375,11 +375,11 @@ jobs:
           -ext "WixToolset.Util.wixext"
           -ext "WixToolset.BootstrapperApplications.wixext"
           ./bundle/bundleWithWinfsp.wxs
-          -out "../../installer/unsigned/Cryptomator-Installer.exe"
+          -out "../../installer/Cryptomator-Installer.exe"
       - name: Detach burn engine in preparation to sign
         if: inputs.sign || inputs.is-release || github.event_name == 'schedule'
         run: >
-          wix burn detach installer/unsigned/Cryptomator-Installer.exe -engine tmp/engine.exe
+          wix burn detach installer/Cryptomator-Installer.exe -engine tmp/engine.exe
       - name: Sign WiX burn engine with Azure Trusted Signing
         if: inputs.sign || inputs.is-release || github.event_name == 'schedule'
         uses: ./.github/actions/win-sign-action
@@ -393,8 +393,9 @@ jobs:
           client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
       - name: Reattach signed burn engine to installer
         if: inputs.sign || inputs.is-release || github.event_name == 'schedule'
-        run: >
-          wix burn reattach installer/unsigned/Cryptomator-Installer.exe -engine tmp/engine.exe -o installer/Cryptomator-Installer.exe
+        run: |
+          Move-Item -Path installer/Cryptomator-Installer.exe -Destination tmp/Cryptomator-Installer.exe
+          wix burn reattach tmp/Cryptomator-Installer.exe -engine tmp/engine.exe -o installer/Cryptomator-Installer.exe
       - name: Sign EXE installer with Azure Trusted Signing
         if: inputs.sign || inputs.is-release || github.event_name == 'schedule'
         uses: ./.github/actions/win-sign-action
