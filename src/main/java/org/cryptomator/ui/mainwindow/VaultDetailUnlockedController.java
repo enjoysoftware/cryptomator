@@ -1,9 +1,8 @@
 package org.cryptomator.ui.mainwindow;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Preconditions;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.tobiasdiez.easybind.EasyBind;
 import org.apache.commons.lang3.SystemUtils;
 import org.cryptomator.common.Nullable;
@@ -90,8 +89,8 @@ public class VaultDetailUnlockedController implements FxController {
 		this.revealPathService = revealPathService;
 		this.decryptNameWindowFactory = decryptNameWindowFactory;
 		this.resourceBundle = resourceBundle;
-		this.vaultStats = CacheBuilder.newBuilder().weakValues().build(CacheLoader.from(this::buildVaultStats));
-		this.decryptNameWindows = CacheBuilder.newBuilder().weakValues().build(CacheLoader.from(this::buildDecryptNameWindow));
+		this.vaultStats = Caffeine.newBuilder().weakValues().build(this::buildVaultStats);
+		this.decryptNameWindows = Caffeine.newBuilder().weakValues().build(this::buildDecryptNameWindow);
 		this.vaultStatsBuilder = vaultStatsBuilder;
 		var mp = vault.flatMap(Vault::mountPointProperty);
 		this.accessibleViaPath = mp.map(m -> m instanceof Mountpoint.WithPath).orElse(false);
@@ -163,7 +162,7 @@ public class VaultDetailUnlockedController implements FxController {
 	}
 
 	private void showDecryptNameWindow(List<Path> pathsToDecrypt) {
-		decryptNameWindows.getUnchecked(vault.get()).showDecryptFileNameWindow(pathsToDecrypt);
+		decryptNameWindows.get(vault.get()).showDecryptFileNameWindow(pathsToDecrypt);
 	}
 
 	private boolean startsWithVaultAccessPoint(Path path) {
@@ -223,7 +222,7 @@ public class VaultDetailUnlockedController implements FxController {
 
 	@FXML
 	public void showVaultStatistics() {
-		vaultStats.getUnchecked(vault.get()).showVaultStatisticsWindow();
+		vaultStats.get(vault.get()).showVaultStatisticsWindow();
 	}
 
 	/* Getter/Setter */
