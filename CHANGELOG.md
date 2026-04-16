@@ -8,9 +8,10 @@ The changelog starts with version 1.19.0.
 Changes to prior versions can be found on the [Github release page](https://github.com/cryptomator/cryptomator/releases).
 
 
-## [Unreleased](https://github.com/cryptomator/cryptomator/compare/1.19.1...HEAD)
+## [Unreleased](https://github.com/cryptomator/cryptomator/compare/1.19.2...HEAD)
 
-No changes yet.
+### Changed
+* Refactored release pipeline to allow immutable releases ([#4205](https://github.com/cryptomator/cryptomator/pull/4205))
 
 
 ## [1.19.2](https://github.com/cryptomator/cryptomator/releases/1.19.2) - 2026-03-20
