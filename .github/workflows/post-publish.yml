@@ -5,11 +5,6 @@ on:
     types: [published]
 
 jobs:
-  get-version:
-    uses: ./.github/workflows/get-version.yml
-    with:
-      version: ${{ github.event.release.tag_name }}
-
   notify:
     runs-on: ubuntu-slim
     steps:
@@ -77,10 +72,36 @@ jobs:
       url: ${{ needs.get-asset-urls.outputs.exe-url }}
     secrets: inherit
 
+  check-release:
+    name: Analyzes the release for certain properties
+    runs-on: ubuntu-slim
+    outputs:
+      release-kind: ${{steps.determine-kind.outputs.value}} # Possible values are [alpha, beta, rc, stable, unknown]
+    steps:
+      - id: determine-kind
+        run: |
+          SEM_VER_NUM=$(echo ${SEM_VER_STR} | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          SEM_VER_SUFFIX="${SEM_VER_STR#"$SEM_VER_NUM"}"
+
+          TYPE="unknown"
+          if [[ -z $SEM_VER_SUFFIX  ]]; then
+            TYPE="stable"
+          elif [[ $SEM_VER_SUFFIX =~ -alpha[1-9]+$ ]]; then
+            TYPE="alpha"
+          elif [[ $SEM_VER_SUFFIX =~ -beta[1-9]+$ ]]; then
+            TYPE="beta"
+          elif [[ $SEM_VER_SUFFIX =~ -rc[1-9]+$ ]]; then
+            TYPE="rc"
+          fi
+          echo "value=${TYPE}" >> $GITHUB_OUTPUT
+        env:
+          SEM_VER_STR: ${{ github.event.release.tag_name }}
+
+
   notify-winget:
     name: Notify for winget-release
-    if: needs.get-asset-urls.outputs.is-windows-release == 'true' && needs.get-version.outputs.versionType == 'stable'
-    needs: [get-version, get-asset-urls]
+    if: needs.get-asset-urls.outputs.is-windows-release == 'true' && needs.check-release.outputs.release-kind == 'stable'
+    needs: [check-release, get-asset-urls]
     runs-on: ubuntu-slim
     steps:
       - name: Slack Notification
@@ -97,9 +118,9 @@ jobs:
           MSG_MINIMAL: true
 
   trigger-website-update:
-    needs: [get-version]
+    needs: [check-release]
     runs-on: ubuntu-slim
-    if: needs.get-version.outputs.versionType == 'stable'
+    if: needs.check-release.outputs.release-kind == 'stable'
     steps:
       - name: Start website update workflow
         uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
@@ -107,12 +128,12 @@ jobs:
           event-type: desktop-release
           token: ${{ secrets.CRYPTOBOT_WORKFLOW_DISPATCH_TOKEN }}
           repository: cryptomator/cryptomator.github.io
-          client-payload: '{ "version": "${{needs.get-version.outputs.semVerStr}}", "release": ${{ toJson(github.event.release.assets) }} }'
+          client-payload: '{ "version": "${{ github.event.release.tag_name }}", "release": ${{ toJson(github.event.release.assets) }} }'
 
   trigger-docs-update:
-    needs: [get-version, get-asset-urls]
+    needs: [check-release, get-asset-urls]
     runs-on: ubuntu-slim
-    if: needs.get-asset-urls.outputs.is-windows-release == 'true' && needs.get-version.outputs.versionType == 'stable'
+    if: needs.get-asset-urls.outputs.is-windows-release == 'true' && needs.check-release.outputs.release-kind == 'stable'
     steps:
       - name: Start docs update workflow
         uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
@@ -120,5 +141,5 @@ jobs:
           event-type: desktop-release
           token: ${{ secrets.CRYPTOBOT_WORKFLOW_DISPATCH_TOKEN }}
           repository: cryptomator/docs
-          client-payload: '{ "version": "${{needs.get-version.outputs.semVerStr}}", "release": ${{ toJson(github.event.release.assets) }} }'
+          client-payload: '{ "version": "${{ github.event.release.tag_name }}", "release": ${{ toJson(github.event.release.assets) }} }'
 
