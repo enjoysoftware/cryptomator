@@ -122,8 +122,8 @@ flowchart TD
 
 | Job | Runs on | Description |
 |-----|---------|-------------|
-| **get-version** | ubuntu | Parses the tag into semver components (`semVerNum`, `semVerSuffix`, `revNum`, `versionType`). Skips remaining jobs if the version format is unknown. |
-| **create-release** | ubuntu | Checks out the repo, verifies the tag is **signed** and lives on a `main` or `release/*` branch. Runs `mvn verify` (with `xvfb-run`). Creates a **draft** GitHub Release using the [release body template](../release-body.md.template). Downloads and GPG-signs the source tarball. |
+| **get-version** | ubuntu | Parses the tag into semver components (`semVerNum`, `semVerSuffix`, `revNum`, `versionType`). The release is aborted if not an alpha, beta, rc or 'stable' release. |
+| **create-release-draft** | ubuntu | Checks out the repo, verifies the tag is **signed** and lives on a `main` or `release/*` branch. Runs `mvn verify` (with `xvfb-run`). Creates a GitHub Release **draft** using the [release body template](../release-body.md.template). Downloads and GPG-signs the source tarball. |
 | **build-exe-and-msi** | windows | Calls [`win-exe.yml`](win-exe.yml). Builds the MSI and EXE bundle installer for x64 Windows. Code-signed via Azure Trusted Signing, GPG-signed, and uploaded to the draft release. Outputs SHA-256 checksums. |
 | **build-dmg-arm64** | macos-15 | Calls [`mac-dmg.yml`](mac-dmg.yml). Builds the DMG for Apple Silicon. Code-signed, notarized with Apple, GPG-signed, and uploaded. Outputs SHA-256 checksum. |
 | **build-dmg-x64** | macos-15-large | Calls [`mac-dmg-x64.yml`](mac-dmg-x64.yml). Same as above but for Intel Macs. Uses macFUSE instead of FUSE-T. |
@@ -164,7 +164,7 @@ After the draft phase completes, a maintainer reviews the draft release on GitHu
 |-----|-----------|-------------|
 | **notify** | always | Sends Slack notifications to `#cryptomator-desktop`: ready to build `.deb` package, and reminder to update `latest-version.json` on S3. |
 | **get-asset-urls** | always | Extracts MSI and EXE download URLs from the release assets. |
-| **check-release** | always | Classifies the published release tag as `stable`, `alpha`, `beta`, `rc`, or `unknown`. Stable-only follow-up jobs depend on this output. Unlike `get-version.yml`, this job does not perform semver validation. |
+| **check-release** | always | Classifies the published release tag as `stable`, `alpha`, `beta`, `rc`, or `unknown`. Stable-only follow-up jobs depend on this output. Unlike `get-version.yml`workflow, this job does not perform semver validation. |
 | **allowlist-msi-x64** | Windows release | Calls [`av-whitelist.yml`](av-whitelist.yml). Uploads the MSI to Kaspersky and Avast for whitelisting. |
 | **allowlist-exe-x64** | Windows release | Same as above for the EXE. Runs sequentially after MSI. |
 | **notify-winget** | stable + Windows | Sends a Slack notification that the release is ready for [winget submission](winget.yml). |
