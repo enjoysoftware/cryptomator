@@ -259,6 +259,16 @@ jobs:
           "-Dlicense.failOnMissing=true"
           "-Dlicense.licenseMergesUrl=file:///${{ github.workspace }}/license/merges"
         shell: pwsh
+      - name: Create file association file from template
+        working-directory: dist/win
+        run: |
+          $Env:JP_WIXWIZARD_RESOURCES_PROPERTIES_FORMAT = "${Env:JP_WIXWIZARD_RESOURCES}".Replace('\', '\\');
+          Get-Content .\resources\FAvaultFile.template.properties `
+            | ForEach-Object { $ExecutionContext.InvokeCommand.ExpandString($_) } `
+            | Out-File -FilePath .\resources\FAvaultFile.properties
+        env:
+          JP_WIXWIZARD_RESOURCES: ${{ github.workspace }}/dist/win/resources/ # requires abs path, used in resources/main.wxs
+        shell: pwsh
       - name: Create MSI
         run: >
           ${JAVA_HOME}/bin/jpackage
