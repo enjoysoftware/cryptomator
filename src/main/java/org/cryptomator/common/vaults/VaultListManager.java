@@ -36,6 +36,7 @@ import java.util.ResourceBundle;
 import static org.cryptomator.common.Constants.MASTERKEY_FILENAME;
 import static org.cryptomator.common.Constants.VAULTCONFIG_FILENAME;
 import static org.cryptomator.common.vaults.VaultState.Value.*;
+import static org.cryptomator.cryptofs.common.Constants.DATA_DIR_NAME;
 
 @Singleton
 public class VaultListManager {
@@ -74,9 +75,7 @@ public class VaultListManager {
 
 	public Vault add(Path pathToVault) throws IOException {
 		Path normalizedPathToVault = pathToVault.normalize().toAbsolutePath();
-		if (CryptoFileSystemProvider.checkDirStructureForVault(normalizedPathToVault, VAULTCONFIG_FILENAME, MASTERKEY_FILENAME) == DirStructure.UNRELATED) {
-			throw new NoSuchFileException(normalizedPathToVault.toString(), null, "Not a vault directory");
-		}
+		assertIsVaultDirectory(normalizedPathToVault);
 
 		return get(normalizedPathToVault) //
 				.orElseGet(() -> {
@@ -84,6 +83,43 @@ public class VaultListManager {
 					vaultList.add(newVault);
 					return newVault;
 				});
+	}
+
+	static void assertIsVaultDirectory(Path pathToVault) throws IOException {
+		if (CryptoFileSystemProvider.checkDirStructureForVault(pathToVault, VAULTCONFIG_FILENAME, MASTERKEY_FILENAME) == DirStructure.UNRELATED) {
+			throw new NoSuchFileException(pathToVault.toString(), null, "Not a vault directory: " + determineNotVaultDirectoryReason(pathToVault));
+		}
+	}
+
+	private static String determineNotVaultDirectoryReason(Path pathToVault) {
+		Path dataDir = pathToVault.resolve(DATA_DIR_NAME);
+		if (!Files.isDirectory(dataDir)) {
+			return describeNotDirectory(dataDir);
+		}
+
+		Path vaultConfig = pathToVault.resolve(VAULTCONFIG_FILENAME);
+		if (!Files.isReadable(vaultConfig)) {
+			Path masterkey = pathToVault.resolve(MASTERKEY_FILENAME);
+			return describeNotReadable(vaultConfig) + "; " + describeNotReadable(masterkey) + " for legacy vault detection";
+		}
+
+		return "directory structure is unsupported";
+	}
+
+	private static String describeNotDirectory(Path path) {
+		if (Files.exists(path)) {
+			return path.getFileName() + " is not a directory";
+		} else {
+			return path.getFileName() + " directory is missing";
+		}
+	}
+
+	private static String describeNotReadable(Path path) {
+		if (Files.exists(path)) {
+			return path.getFileName() + " is not readable";
+		} else {
+			return path.getFileName() + " is missing";
+		}
 	}
 
 	private VaultSettings newVaultSettings(Path path) {
