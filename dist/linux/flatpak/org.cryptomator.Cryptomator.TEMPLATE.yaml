@@ -150,14 +150,14 @@ modules:
         dest-filename: jdk.tar.gz
         only-arches:
           - x86_64
-        url: https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.2%2B10/OpenJDK25U-jdk_x64_linux_hotspot_25.0.2_10.tar.gz
-        sha512: 29043fde119a031c2ca8d57aed445fedd9e7f74608fcdc7a809076ba84cfd1c31f08de2ecccf352e159fdcd1cae172395ed46363007552ff242057826c81ab3a
+        url: https://github.com/adoptium/temurin26-binaries/releases/download/jdk-26.0.1%2B8/OpenJDK26U-jdk_x64_linux_hotspot_26.0.1_8.tar.gz
+        sha512: eb46cda97ffd46e2e0c1f6f977dc204d9cc969b958946287b7e7d0bfe859fd92faccb2f6ef79995421a963c6de140c436af559403e0a2cd27c90b06c20260d5c
       - type: file
         dest-filename: jdk.tar.gz
         only-arches:
           - aarch64
-        url: https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.2%2B10/OpenJDK25U-jdk_aarch64_linux_hotspot_25.0.2_10.tar.gz
-        sha512: f1d3ccec3e1f1bed9d632f14b9223709d6e5c2e0d922125d068870dd3016492a2ca8f08924d4a9d0dc5eb2159fa09efee366a748fd0093475baf29e5c70c781a
+        url: https://github.com/adoptium/temurin26-binaries/releases/download/jdk-26.0.1%2B8/OpenJDK26U-jdk_aarch64_linux_hotspot_26.0.1_8.tar.gz
+        sha512: 3c31671552712a8f0df96df2eeae7e9ad5156c0e98ebd5bf4fa04c14bba58bd5e19ff567ddcdc7aa478f6f4b0a852762a09bd88d3132acb121e667cfe0397034
       - type: file
         dest-filename: openjfx.zip
         only-arches:

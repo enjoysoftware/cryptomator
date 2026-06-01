@@ -26,7 +26,7 @@ on:
 
 env:
   JAVA_DIST: 'temurin'
-  JAVA_VERSION: 25
+  JAVA_VERSION: 26
 
 jobs:
   determine-version:
