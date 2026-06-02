@@ -338,7 +338,8 @@ public class VaultListController implements FxController {
 				LOG.warn("Cannot add {}: {}", target, e.getMessage());
 				Platform.runLater(() -> dialogs.prepareNotAVaultDirectoryDialog(mainWindow, e).build().showAndWait());
 			} catch (IOException e) {
-				LOG.error("Failed to add vault {}", target, e);
+				LOG.warn("Failed to add vault {}", target, e);
+				Platform.runLater(() -> appWindows.showErrorWindow(e, mainWindow, null));
 			}
 		});
 	}

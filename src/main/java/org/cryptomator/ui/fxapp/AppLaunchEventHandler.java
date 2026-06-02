@@ -72,7 +72,6 @@ class AppLaunchEventHandler {
 
 	// TODO deduplicate MainWindowController...
 	private void openPotentialVault(Path path) {
-		assert !Platform.isFxApplicationThread();
 		Path potentialVaultPath = path.getFileName().toString().endsWith(CRYPTOMATOR_FILENAME_EXT) ? path.getParent() : path;
 		Optional<Vault> existing = vaultListManager.get(potentialVaultPath.normalize().toAbsolutePath());
 		if (existing.isPresent()) {
