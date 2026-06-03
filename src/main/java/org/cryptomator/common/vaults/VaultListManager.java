@@ -26,7 +26,9 @@ import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Collection;
@@ -121,14 +123,16 @@ public class VaultListManager {
 
 	static void checkConfigFile(Path pathToVault) throws NotAVaultDirectoryException {
 		Path vaultConfig = pathToVault.resolve(VAULTCONFIG_FILENAME);
-		if (!Files.exists(vaultConfig)) {
-			throw new NotAVaultDirectoryException(pathToVault, NotAVaultDirectoryException.Reason.MISSING_VAULT_CONFIG);
-		}
-		try (var ch = Files.newByteChannel(vaultConfig, StandardOpenOption.READ)){
+
+		try (var ch = Files.newByteChannel(vaultConfig, StandardOpenOption.READ)) {
 			ch.read(ByteBuffer.allocate(1));
+		} catch (AccessDeniedException e) {
+			throw new NotAVaultDirectoryException(pathToVault, NotAVaultDirectoryException.Reason.VAULT_CONFIG_ACCESS_DENIED);
+		} catch (NoSuchFileException e) {
+			throw new NotAVaultDirectoryException(pathToVault, NotAVaultDirectoryException.Reason.MISSING_VAULT_CONFIG);
 		} catch (IOException e) {
 			LOG.warn("Failed to read vault config: {}", e.getMessage());
-			throw new NotAVaultDirectoryException(pathToVault, NotAVaultDirectoryException.Reason.VAULT_CONFIG_ACCESS_DENIED);
+			throw new NotAVaultDirectoryException(pathToVault, NotAVaultDirectoryException.Reason.UNSUPPORTED_STRUCTURE);
 		}
 	}
 
