@@ -14,6 +14,7 @@ Changes to prior versions can be found on the [Github release page](https://gith
 * New error dialog if importing a vault fails ([#4243](https://github.com/cryptomator/cryptomator/pull/4243))
 
 ### Fixed
+* Fixed Cryptomator file extensions were not registered on Windows ([#4219](https://github.com/cryptomator/cryptomator/issues/4219))
 * Fixed warning was displayed when accessing update tab in settings even though an update check did not ran ([#4199](https://github.com/cryptomator/cryptomator/pull/4199))
 * Fixed several Decrypt Name dialogs could be opened on the same vault ([#4164](https://github.com/cryptomator/cryptomator/pull/4164))
 * Fixed not all mount options in vault specific settings could be displayed ([#4227](https://github.com/cryptomator/cryptomator/pull/4227))
