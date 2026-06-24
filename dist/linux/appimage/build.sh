@@ -19,7 +19,7 @@ if [[ ! "${CPU_ARCH}" =~ x86_64|aarch64 ]]; then echo "Platform ${CPU_ARCH} not 
 ../../../mvnw -f ../../../pom.xml versions:set -DnewVersion=${SEMVER_STR}
 
 # compile
-../../../mvnw -B -f ../../../pom.xml clean package -Plinux -DskipTests
+../../../mvnw -B -f ../../../pom.xml clean package -DskipTests
 cp ../../../LICENSE.txt ../../../target
 cp ../../../target/cryptomator-*.jar ../../../target/mods
 

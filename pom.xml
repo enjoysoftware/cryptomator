@@ -502,9 +502,6 @@
 				<os>
 					<family>mac</family>
 				</os>
-				<property>
-					<name>idea.version</name>
-				</property>
 			</activation>
 			<dependencies>
 				<dependency>
@@ -520,12 +517,9 @@
 			<activation>
 				<os>
 					<family>unix</family>
-					<name>Linux</name>
+					<name>linux</name>
 					<arch>aarch64</arch>
 				</os>
-				<property>
-					<name>idea.version</name>
-				</property>
 			</activation>
 			<dependencies>
 				<dependency>
@@ -565,12 +559,9 @@
 			<activation>
 				<os>
 					<family>unix</family>
-					<name>Linux</name>
+					<name>linux</name>
 					<arch>amd64</arch>
 				</os>
-				<property>
-					<name>idea.version</name>
-				</property>
 			</activation>
 			<dependencies>
 				<dependency>
@@ -587,9 +578,6 @@
 				<os>
 					<family>windows</family>
 				</os>
-				<property>
-					<name>idea.version</name>
-				</property>
 			</activation>
 			<dependencies>
 				<dependency>

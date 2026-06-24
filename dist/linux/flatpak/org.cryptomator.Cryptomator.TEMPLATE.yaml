@@ -94,7 +94,7 @@ modules:
       - mkdir maven
       - tar xf maven.tar.gz --strip-components=1 --exclude=jansi-native --directory=maven
       # Build project
-      - maven/bin/mvn clean package -DskipTests -P"linux-$(uname -m)"
+      - maven/bin/mvn clean package -DskipTests
       - cp target/cryptomator-*.jar target/mods
       - cd target
       - $JAVA_HOME/bin/jlink
