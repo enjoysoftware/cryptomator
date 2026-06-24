@@ -84,9 +84,6 @@ For more information on the security details visit [cryptomator.org](https://doc
 
 ```
 ./mvnw clean install
-# or ./mvnw clean install -Pwin
-# or ./mvnw clean install -Pmac
-# or ./mvnw clean install -Plinux
 ```
 
 This will build all the jars and bundle them together with their OS-specific dependencies under `target`. This can now be used to build native packages.
