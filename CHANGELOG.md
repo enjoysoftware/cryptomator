@@ -24,6 +24,7 @@ Changes to prior versions can be found on the [Github release page](https://gith
 * Refactored release pipeline to allow immutable releases ([#4205](https://github.com/cryptomator/cryptomator/pull/4205))
 * Updated to JDK 26.0.1 ([#4244](https://github.com/cryptomator/cryptomator/pull/4244))
 * Updated to JavaFX 25.0.3 ([#4255](https://github.com/cryptomator/cryptomator/pull/4255))
+* Drop signing with Actalis issued certificate ([#4169](https://github.com/cryptomator/cryptomator/pull/4169), [#4262](https://github.com/cryptomator/cryptomator/pull/4262))
 * Updated dependencies:
   - `org.cryptomator:webdav-nio-adapter` from 3.0.1 to 3.0.2
   - `org.cryptomator:integrations-api` from 1.8.0 to 1.9.0
