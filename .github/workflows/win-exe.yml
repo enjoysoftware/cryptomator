@@ -242,17 +242,10 @@ jobs:
           base-dir: ${{ github.workspace }}\appdir\Cryptomator
           file-extensions: 'ps1'
           recursive: false
-          append-signature: false
+          append-signature: false  # Powershell scripts cannot be signed in append mode, see #4260
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-      - name: Upload artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: ps1-${{ matrix.arch }}
-          path: |
-            appdir/Cryptomator/*.ps1
-          if-no-files-found: error
       - name: Replace DLLs inside jars with signed ones
         shell: pwsh
         run: |
