@@ -79,15 +79,11 @@ For more information on the security details visit [cryptomator.org](https://doc
 ### Dependencies
 
 * JDK 25 (e.g. temurin, zulu)
-* Maven 3
 
 ### Run Maven
 
 ```
-mvn clean install
-# or mvn clean install -Pwin
-# or mvn clean install -Pmac
-# or mvn clean install -Plinux
+./mvnw clean install
 ```
 
 This will build all the jars and bundle them together with their OS-specific dependencies under `target`. This can now be used to build native packages.
