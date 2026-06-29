@@ -6,7 +6,7 @@ on:
 
 jobs:
   notify:
-    runs-on: ubuntu
+    runs-on: ubuntu-latest
     steps:
       - name: Notify about DEB build
         uses: rtCamp/action-slack-notify@33ca3be66c6f378fe1610fd1d5258632dbed5e58 # v2.4.0
@@ -102,7 +102,7 @@ jobs:
     name: Notify for winget-release
     if: needs.get-asset-urls.outputs.is-windows-release == 'true' && needs.check-release.outputs.release-kind == 'stable'
     needs: [check-release, get-asset-urls]
-    runs-on: ubuntu
+    runs-on: ubuntu-latest
     steps:
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@33ca3be66c6f378fe1610fd1d5258632dbed5e58 # v2.4.0

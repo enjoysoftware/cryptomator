@@ -78,7 +78,7 @@ jobs:
           local-dir: ./upload/
   allowlist-avast:
     name: Anti Virus Allowlisting Avast
-    runs-on: ubuntu
+    runs-on: ubuntu-latest
     needs: download-file
     if: inputs.avast
     steps:
